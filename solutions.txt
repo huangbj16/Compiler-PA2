@@ -1,0 +1,17 @@
+scopy
+修改文件TypeCheck.java：增加了visitScopy函数，检查了ident和expr是否是class类型以及二者是否兼容。
+
+sealed
+修改文件Class.java：增加了成员变量boolean sealed，和函数getSealed()，setSealed(boolean)。
+BuildSym.java：在建立符号表时增加了判断，如果类是sealed的，那么就调用setSealed(true)。
+TypeCheck.java：修改了visitClassDef()，增加了对基类sealed的错误检查。
+
+GuardedStmt
+BuildSym.java：增加了visitGuardedStmt()和visitIfSubStmt()，在建立符号表的过程中为IfSubStmt中可能出现的StmtList提前建立LocalScope。
+TypeCheck.java：增加了visitGuardedStmt()和visitIfSubStmt()，检查了IfSubStmt中的expr是否为BaseType.BOOL。
+
+Var 这是目前为止最复杂的一次改动……
+Symbol.java：增加了setType()函数，这样就可以更改symbol的type，就可以“先将x设置为unknown，在能确定x类型时再置为相应的类型”。
+BuildSym.java：增加了visitAssign()和visitVar()，visitAssign的用处是调用var.accept()，再激活visitVar()；在visitVar()，定义新的Variable，同时要判断是否有声明冲突。写法可以参考visitVarDef()。
+TypeCheck.java：修改了visitAssign()，增加了visitVar()，在visitAssign()中，如果发现是var类型的LValue，就用expr更新var的类型；在visitVar()中，将var.type赋值为unknown即可，如果Var定义的位置有问题，可能出现var.type=null的问题，所以需要处理一下。
+BaseType.java：增加了新的BaseType常量UNKNOWN。
